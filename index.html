@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="author" content="">
+	<meta name="description" content="">
+	
+	<title>Title</title>
+	
+	<script>document.documentElement.className = 'js';</script>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+	<!-- Force latest IE rendering engine & Chrome Frame -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<!-- Make IE recognise HTML5 elements for styling - must stay in the head, before elements are used -->
+	<!--[if lte IE 8]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<!-- Disable image toolbar in IE6 -->
+	<!--[if lte IE 6]><meta http-equiv="imagetoolbar" content="no" /><![endif]-->
+	
+	<link rel="icon" type="image/png" href="images/favicon.png" />
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+	
+	<link rel="stylesheet" type="text/css" href="css/template.reset.css" />
+	<link rel="stylesheet" type="text/css" href="css/template.typography.css" />
+	<link rel="stylesheet" type="text/css" href="css/template.typography.12_20.css" />
+	<link rel="stylesheet" type="text/css" href="css/template.forms.css" />
+	<link rel="stylesheet" type="text/css" href="css/template.classes.css" />
+	<!--[if lte IE 8]><link rel="stylesheet" type="text/css" href="css/template.ie.css" /><![endif]-->
+	<!--[if IE 8]><link rel="stylesheet" type="text/css" href="css/template.ie8.css" /><![endif]-->
+	<!--[if IE 7]><link rel="stylesheet" type="text/css" href="css/template.ie7.css" /><![endif]-->
+	<!--[if IE 6]><link rel="stylesheet" type="text/css" href="css/template.ie6.css" /><![endif]-->
+	<style>
+		body {
+			padding: 3em;
+		}
+		
+		.test {
+			
+			width: 180px;
+			position: relative;
+			padding: 1em;
+			padding-top: 240px;
+			
+			color: white;
+		}
+		
+		.test .controls {
+			z-index: 2;
+		}
+		
+		.point {
+			position: absolute;
+			-webkit-border-radius: 6px;
+			   -moz-border-radius: 6px;
+			        border-radius: 6px;
+			border: 2px solid rgba(63,63,63,0.8);
+			
+			top: 132px;
+			left: 50%;
+			width: 12px;
+			height: 12px;
+			margin-left: -6px;
+			margin-top: -6px;
+			
+			z-index: 3;
+		}
+		
+		#bg {
+			width: 100%;
+			height: 100%;
+			z-index: 1;
+			
+			-webkit-border-radius: 0.5em;
+			   -moz-border-radius: 0.5em;
+			        border-radius: 0.5em;
+		}
+
+		#paint {
+			width: 200px;
+			height: 200px;
+			margin-left: -10px;
+			z-index: 2;
+			position: absolute;
+			top: 32px;
+			left: 0;
+		}
+		
+		h2 {
+			color: white;
+			position: relative;
+			z-index: 2;
+			font-weight: bold;
+			position: absolute;
+			top: 1em;
+			left: 1em;
+		}
+	</style>
+	
+</head>
+
+<body>
+	<div class="test">
+		<h2>Colour</h2>
+		<canvas id="bg" class="bg_layer layer"></canvas>
+		<canvas id="paint"></canvas>
+		<form class="controls">
+			<label for="lightness_picker">Lightness</label>
+			<input type="range" data-property="lightness" value="1" id="lightness_picker" min="0" max="1" step="0.01"/>
+			
+			<label for="opacity_picker">Opacity</label>
+			<input type="range" data-property="opacity" value="1" id="opacity_picker" min="0" max="1" step="0.01"/>
+		</form>
+		<div class="point"></div>
+	</div>
+	
+	
+	<!--[if IE 6]><script src="iepngfix/iepngfix_tilebg.js"></script><![endif]-->
+	<script src="js/js.extensions.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+	<script>!window.jQuery && document.write(unescape('%3Cscript src="js/jquery.js"%3E%3C/script%3E'));</script>
+	<script src="js/jquery.event.move.js"></script>
+	<script src="js/jquery.validator.js"></script>
+	<script src="js/jquery.transitions.js"></script>
+	
+	<script type="text/javascript">
+				
+				// ----------
+				
+				var τ = Math.PI * 2,
+				    opacity = 0.8,
+				    bg = jQuery('#bg'),
+				    size = {
+				    	width: bg.width(),
+				    	height: bg.height()
+				    },
+				    canvas, gradient, color, n;
+				
+				bg[0].width = bg.width();
+				bg[0].height = bg.height();
+				
+				// Get canvas context, draw canvas, get image data		
+				// if fails we don't support canvas, so give up
+				try {
+					canvas = bg[0].getContext('2d');
+				}
+				catch(e) {
+					// canvas not supported
+					//return this;
+				}
+				
+				canvas.fillStyle = 'rgba(120,120,120,1)';
+				
+				canvas.beginPath();
+				canvas.moveTo(0,0);
+				canvas.rect(0,0,size.width, size.height);
+				canvas.fill();
+				canvas.closePath();
+				
+				canvas.globalCompositeOperation	=	'destination-out';
+				
+				canvas.translate(size.width/2, 132);
+
+				canvas.beginPath();
+				canvas.moveTo(0,0);
+				
+				canvas.arc(0,0,100, 0, τ);
+				
+				canvas.fill();
+				canvas.closePath();
+				
+				
+				
+				
+				
+				// -----------
+				
+				var τ = Math.PI * 2,
+				    opacity = 0.8,
+				    lightness = 1,
+				    segments = 900,
+				    containerElement = jQuery('.test')[0],
+				    canvasElement = jQuery('#paint')[0],
+				    canvas, gradient, color, n;
+				
+				canvasElement.width = 200;
+				canvasElement.height = 200;
+				
+				// Get canvas context, draw canvas, get image data		
+				// if fails we don't support canvas, so give up
+				try {
+					canvas = canvasElement.getContext('2d');
+				}
+				catch(e) {
+					// canvas not supported
+					//return this;
+				}
+				
+				canvas.translate(100,100);
+				
+				function drawChooser(canvas, segments, lightness, opacity) {
+					var n = segments,
+							a = τ / segments;
+					
+					canvas.clearRect(-200,-200,400,400);
+					
+					//canvas.globalCompositeOperation	=	'source-out';
+					
+					while (n--) {
+						// Create Linear Gradients
+						gradient = canvas.createRadialGradient(0,0,0,0,0,96);
+						gradient.addColorStop(0, 'hsla('+(360*n/segments)+', 0%, '+(lightness*100)+'%, '+opacity+')');
+						gradient.addColorStop(1, 'hsla('+(360*n/segments)+', 100%, 50%, '+opacity+')');
+						
+						canvas.fillStyle = gradient;
+						
+						canvas.beginPath();
+						canvas.moveTo(0,0);
+						canvas.arc(0,0,98, -a/2, a/2);
+						canvas.fill();
+						canvas.rotate(a);
+						canvas.closePath();
+					}
+				}
+				
+				drawChooser(canvas, segments, lightness, opacity);
+				
+				
+				
+				
+				
+				
+				
+				// helper functions
+				
+				// colorData: array containing canvas-style data for a pixel in order: r, g, b, alpha transparency
+				// return color object
+				var colorFromData = function(canvasIndex,data) {
+					var color = {
+						r: data[canvasIndex],
+						g: data[canvasIndex+1],
+						b: data[canvasIndex+2],
+						alpha: data[canvasIndex+3]
+					};
+					color.rgbhex = rgbToHex(color.r,color.g,color.b);
+					return color;
+				};
+			
+				// e: click event object
+				// w: width of canvas element
+				// offset: canvas selement offset object
+				// returns canvas index
+				var canvasIndexFromEvent = function(w,coords) {
+					return (coords.left + coords.top * w) * 4;		
+				};
+			
+				// i: color channel value, integer 0-255
+				// returns two character string hex representation of a color channel (00-FF)
+				var toHex = function(i) {
+					if(i === undefined) return 'FF'; // TODO this shouldn't happen; looks like offset/x/y might be off by one
+					var str = i.toString(16);
+					while(str.length < 2) { str = '0' + str; }
+					return str;
+				};
+				
+				// r,g,b: color channel value, integer 0-255
+				// returns six character string hex representation of a color
+				var rgbToHex = function(r,g,b) {
+					return toHex(r)+toHex(g)+toHex(b);
+				};
+				
+				var imageData=canvas.getImageData(0, 0, 200, 200);
+				var point = jQuery('.point');
+				
+				// mousemove (hover) event
+				jQuery(canvasElement)
+//				.mousemove(function(e){
+//					var canvasIndex = canvasIndexFromEvent(e,jQuery(this).width(),jQuery(this).offset());
+//					var color = colorFromData(canvasIndex,imageData.data);
+//					
+//					console.log(color.r, color.g, color.b, color.alpha);
+//				})
+				.bind('mousedown move', function(e) {
+					var elem = jQuery(this),
+							offset = elem.offset(),
+							coords = {
+								left: e.pageX - offset.left,
+								top: e.pageY - offset.top
+							};
+					
+					// Limit point to within chooser circle
+					var polar = Math.toPolar([coords.left - 100, coords.top - 100]);
+					var cart;
+					
+					if (polar[0] > 98) {
+						polar[0] = 98;
+						cart = Math.toCartesian(polar);
+						coords.left = parseInt(cart[0]) + 100;
+						coords.top = parseInt(cart[1]) + 100;
+					}
+					
+					console.log(coords.left, coords.top);
+					
+					var canvasIndex = canvasIndexFromEvent(elem.width(),coords);
+					var color = colorFromData(canvasIndex,imageData.data);
+					
+					point.css({
+						top: 32 + coords.top,
+						left: -10 + coords.left,
+						backgroundColor: "rgba("+color.r+","+color.g+","+color.b+","+color.alpha+")"
+					});
+					
+				});
+				
+				var changeProperty = {
+					opacity: function(val) {
+						opacity = parseFloat(val);
+						drawChooser(canvas, segments, lightness, opacity);
+					},
+					lightness: function(val) {
+						lightness = parseFloat(val);
+						drawChooser(canvas, segments, lightness, opacity);
+					}
+				};
+				
+				jQuery('.controls').delegate('input', 'change', function(e) {
+					var input = jQuery(this),
+							property = input.data('property');
+					
+					changeProperty[property](input.val());
+				});
+	</script>
+</body>
+</html>
