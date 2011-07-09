@@ -32,6 +32,7 @@
 	<style>
 		body {
 			padding: 3em;
+			background-image: url('css/tests/images/grid_8px.png')
 		}
 		
 		.test {
@@ -50,17 +51,19 @@
 		
 		.point {
 			position: absolute;
-			-webkit-border-radius: 6px;
-			   -moz-border-radius: 6px;
-			        border-radius: 6px;
-			border: 2px solid rgba(63,63,63,0.8);
+			-webkit-border-radius: 7px;
+			   -moz-border-radius: 7px;
+			        border-radius: 7px;
 			
-			top: 132px;
+			border: 2px solid rgba(63,63,63,0.8);
+			background-color: white;
+			
+			top: 100px;
 			left: 50%;
-			width: 12px;
-			height: 12px;
-			margin-left: -6px;
-			margin-top: -6px;
+			width: 14px;
+			height: 14px;
+			margin-left: -7px;
+			margin-top: -7px;
 			
 			z-index: 3;
 		}
@@ -74,15 +77,20 @@
 			   -moz-border-radius: 0.5em;
 			        border-radius: 0.5em;
 		}
-
-		#paint {
+		
+		.wheel_wrap {
+			position: absolute;
+			top: 32px;
+			left: 0;
 			width: 200px;
 			height: 200px;
 			margin-left: -10px;
 			z-index: 2;
-			position: absolute;
-			top: 32px;
-			left: 0;
+		}
+		
+		#colorwheel {
+			width: 200px;
+			height: 200px;
 		}
 		
 		h2 {
@@ -102,15 +110,18 @@
 	<div class="test">
 		<h2>Colour</h2>
 		<canvas id="bg" class="bg_layer layer"></canvas>
-		<canvas id="paint"></canvas>
+		<div class="wheel_wrap wrap">
+			<canvas id="colorwheel"></canvas>
+			<div class="point"></div>
+		</div>
+		
 		<form class="controls">
-			<label for="lightness_picker">Lightness</label>
-			<input type="range" data-property="lightness" value="1" id="lightness_picker" min="0" max="1" step="0.01"/>
-			
-			<label for="opacity_picker">Opacity</label>
-			<input type="range" data-property="opacity" value="1" id="opacity_picker" min="0" max="1" step="0.01"/>
+		  <label for="lightness_picker">Lightness</label>
+		  <input type="range" data-property="lightness" value="1" id="lightness_picker" min="0" max="1" step="0.01"/>
+		  
+		  <label for="opacity_picker">Opacity</label>
+		  <input type="range" data-property="opacity" value="1" id="opacity_picker" min="0" max="1" step="0.01"/>
 		</form>
-		<div class="point"></div>
 	</div>
 	
 	
@@ -119,6 +130,7 @@
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 	<script>!window.jQuery && document.write(unescape('%3Cscript src="js/jquery.js"%3E%3C/script%3E'));</script>
 	<script src="js/jquery.event.move.js"></script>
+	<script src="js/jquery.color.js"></script>
 	<script src="js/jquery.validator.js"></script>
 	<script src="js/jquery.transitions.js"></script>
 	
@@ -175,12 +187,16 @@
 				// -----------
 				
 				var τ = Math.PI * 2,
-				    opacity = 0.8,
-				    lightness = 1,
-				    segments = 900,
+				    opacity = 1,
+				    lightness = 0,
+				    segments = 180,
+				    innerRadius = 8,
+				    outerRadius = 96,
+				    point = jQuery('.point'),
+				    pointPos = { left: 0, right: 0 },
 				    containerElement = jQuery('.test')[0],
-				    canvasElement = jQuery('#paint')[0],
-				    canvas, gradient, color, n;
+				    canvasElement = jQuery('#colorwheel')[0],
+				    canvas, gradient, color, n, wheelData, imageData;
 				
 				canvasElement.width = 200;
 				canvasElement.height = 200;
@@ -197,29 +213,82 @@
 				
 				canvas.translate(100,100);
 				
-				function drawChooser(canvas, segments, lightness, opacity) {
+				var drawSpectrum = function(canvas, segments) {
 					var n = segments,
-							a = τ / segments;
+							l = segments - 1,
+							a = τ / segments,
+							coords = {
+								left: parseInt(point.css('left')),
+								top:  parseInt(point.css('top'))
+							},
+							gradient, wheelData;
+					
+					canvas.globalCompositeOperation	=	'source-over';
+					
+					while (n--) {
+					  canvas.fillStyle = 'hsl('+(360*n/segments)+', 100%, 50%)';
+					  
+					  canvas.beginPath();
+					  canvas.moveTo(0,0);
+					  canvas.arc(0,0,98, (n === l ? -a : -a/2), (n === 0 ? a/2 : a));
+					  canvas.fill();
+					  canvas.rotate(a);
+					  canvas.closePath();
+					}
+					
+					// Knock out gradient
+					gradient = canvas.createRadialGradient(0,0,innerRadius,0,0,outerRadius);
+					gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+					gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+					
+					canvas.globalCompositeOperation	=	'destination-out';
+					canvas.fillStyle = gradient;
+					
+					canvas.beginPath();
+					canvas.moveTo(0,0);
+					canvas.arc(0,0,outerRadius,0,τ);
+					canvas.fill();
+					canvas.closePath();
+					
+					// Cache the image data so we can render the spectrum
+					// quickly next time.
+					wheelData = canvas.getImageData(-100,-100,200,200);
+					
+					drawSpectrum = function(c, s) {
+						c.putImageData(wheelData, 0, 0);
+					};
+				};
+				
+				function drawChooser(canvas, segments, lightness, opacity) {
+					canvas.save();
 					
 					canvas.clearRect(-200,-200,400,400);
 					
-					//canvas.globalCompositeOperation	=	'source-out';
+					drawSpectrum(canvas, segments);
 					
-					while (n--) {
-						// Create Linear Gradients
-						gradient = canvas.createRadialGradient(0,0,0,0,0,96);
-						gradient.addColorStop(0, 'hsla('+(360*n/segments)+', 0%, '+(lightness*100)+'%, '+opacity+')');
-						gradient.addColorStop(1, 'hsla('+(360*n/segments)+', 100%, 50%, '+opacity+')');
-						
-						canvas.fillStyle = gradient;
-						
-						canvas.beginPath();
-						canvas.moveTo(0,0);
-						canvas.arc(0,0,98, -a/2, a/2);
-						canvas.fill();
-						canvas.rotate(a);
-						canvas.closePath();
-					}
+					// Apply the background lightness
+					canvas.globalCompositeOperation	=	'destination-over';
+					canvas.fillStyle = 'hsl(0, 0%, '+(100*lightness)+'%)';
+					
+					canvas.beginPath();
+					canvas.moveTo(0,0);
+					canvas.arc(0,0,outerRadius,0,τ);
+					canvas.fill();
+					canvas.closePath();
+					
+					// Apply the opacity
+					canvas.globalCompositeOperation	=	'destination-out';
+					canvas.fillStyle = 'rgba(0,0,0,'+(1-opacity)+')';
+					
+					canvas.beginPath();
+					canvas.moveTo(0,0);
+					canvas.rect(-100,-100,200,200);
+					canvas.fill();
+					canvas.closePath();
+					
+					canvas.restore();
+					
+					imageData = undefined;
 				}
 				
 				drawChooser(canvas, segments, lightness, opacity);
@@ -228,97 +297,82 @@
 				
 				
 				
-				
-				
-				// helper functions
-				
-				// colorData: array containing canvas-style data for a pixel in order: r, g, b, alpha transparency
-				// return color object
-				var colorFromData = function(canvasIndex,data) {
-					var color = {
-						r: data[canvasIndex],
-						g: data[canvasIndex+1],
-						b: data[canvasIndex+2],
-						alpha: data[canvasIndex+3]
-					};
-					color.rgbhex = rgbToHex(color.r,color.g,color.b);
-					return color;
-				};
-			
-				// e: click event object
-				// w: width of canvas element
-				// offset: canvas selement offset object
-				// returns canvas index
-				var canvasIndexFromEvent = function(w,coords) {
-					return (coords.left + coords.top * w) * 4;		
-				};
-			
-				// i: color channel value, integer 0-255
-				// returns two character string hex representation of a color channel (00-FF)
-				var toHex = function(i) {
-					if(i === undefined) return 'FF'; // TODO this shouldn't happen; looks like offset/x/y might be off by one
-					var str = i.toString(16);
-					while(str.length < 2) { str = '0' + str; }
-					return str;
+				function getPixelColor(canvas, coords) {
+					var pixelIndex = getPixelIndex(200, coords),
+							pixelColor;
+					
+					if (!imageData) {
+						imageData = canvas.getImageData(0, 0, 200, 200).data;
+					}
+					
+					pixelColor = Array.prototype.slice.apply(imageData, [pixelIndex, pixelIndex+4]);
+					
+					// Opacity in canvas image data is reported in the range 0-255. Set
+					// it to the range 0-1.
+					pixelColor[3] /= 255;
+					
+					return jQuery.Color(pixelColor);
 				};
 				
-				// r,g,b: color channel value, integer 0-255
-				// returns six character string hex representation of a color
-				var rgbToHex = function(r,g,b) {
-					return toHex(r)+toHex(g)+toHex(b);
+				function getPixelIndex(width, coords) {
+					return (coords.left + coords.top * width) * 4;		
 				};
-				
-				var imageData=canvas.getImageData(0, 0, 200, 200);
-				var point = jQuery('.point');
 				
 				// mousemove (hover) event
-				jQuery(canvasElement)
-//				.mousemove(function(e){
-//					var canvasIndex = canvasIndexFromEvent(e,jQuery(this).width(),jQuery(this).offset());
-//					var color = colorFromData(canvasIndex,imageData.data);
-//					
-//					console.log(color.r, color.g, color.b, color.alpha);
-//				})
+				jQuery('.wheel_wrap')
 				.bind('mousedown move', function(e) {
 					var elem = jQuery(this),
-							offset = elem.offset(),
-							coords = {
-								left: e.pageX - offset.left,
-								top: e.pageY - offset.top
-							};
+							offset = elem.offset();
+							
+					coords = {
+					  left: e.pageX - offset.left,
+					  top: e.pageY - offset.top
+					};
 					
-					// Limit point to within chooser circle
 					var polar = Math.toPolar([coords.left - 100, coords.top - 100]);
 					var cart;
 					
-					if (polar[0] > 98) {
-						polar[0] = 98;
+					// Limit point to within chooser circle
+					if (polar[0] > 96) {
+						polar[0] = 97;
 						cart = Math.toCartesian(polar);
 						coords.left = parseInt(cart[0]) + 100;
 						coords.top = parseInt(cart[1]) + 100;
 					}
+					// Lock point to centre if its within the inner circle
+					else if (polar[0] < 8) {
+						polar[0] = 0;
+						coords.left = 100;
+						coords.top = 100;
+					}
 					
-					console.log(coords.left, coords.top);
-					
-					var canvasIndex = canvasIndexFromEvent(elem.width(),coords);
-					var color = colorFromData(canvasIndex,imageData.data);
+					var color = getPixelColor(canvas, coords);
 					
 					point.css({
-						top: 32 + coords.top,
-						left: -10 + coords.left,
-						backgroundColor: "rgba("+color.r+","+color.g+","+color.b+","+color.alpha+")"
+						top: coords.top,
+						left: coords.left,
+						backgroundColor: color.toRgbaString()
 					});
-					
 				});
+				
+				function updatePoint(canvas, coords) {
+					var color = getPixelColor(canvas, coords);
+					
+					point.css({
+						backgroundColor: color.toRgbaString()
+					});
+				}
 				
 				var changeProperty = {
 					opacity: function(val) {
 						opacity = parseFloat(val);
 						drawChooser(canvas, segments, lightness, opacity);
+						updatePoint(canvas, coords);
 					},
 					lightness: function(val) {
 						lightness = parseFloat(val);
 						drawChooser(canvas, segments, lightness, opacity);
+						updatePoint(canvas, coords);
 					}
 				};
 				
