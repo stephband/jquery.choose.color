@@ -13,7 +13,9 @@
 	    	segments: 180,
 	    	innerRadius: 8,
 	    	outerRadius: 96
-	    };
+	    },
+	    
+	    Vector = jQuery.Vector || Math.Vector;
 	
 	var changeProperty = {
 	  alpha: function(canvas, data, handle, val, fn) {
@@ -27,6 +29,14 @@
 	  	updateHandle(canvas, data, handle, fn);
 	  }
 	};
+	
+	// Helpers
+	
+	function limit(n, min, max) {
+		return n > max ? max : n < min ? min : n ;
+	}
+	
+	// 
 	
 	function setupCanvas(node, width, height, fn) {
 		var canvas;
@@ -151,7 +161,7 @@
 	
 	
 	function getPixelColor(canvas, data) {
-		var pixelIndex = getPixelIndex(data.width, data.left, data.top),
+		var pixelIndex = getPixelIndex(data.width, parseInt(data.left), parseInt(data.top)),
 				pixelColor;
 		
 		if (!data.renderData) {
@@ -202,8 +212,8 @@
 		var color = getPixelColor(canvas, data);
 	
 		handle.css({
-			top: data.top,
-			left: data.left,
+			top: parseInt(data.top),
+			left: parseInt(data.left),
 			backgroundColor: color.toRgbaString()
 		});
 		
@@ -337,7 +347,19 @@
 			
 			limitHandlePosition(data);
 			updateHandle(canvas, data, handle, fn);
+		})
+		.bind('mousewheel.chooser DOMMouseScroll.chooser', function(e) {
+			var elem = jQuery(this),
+					delta = e.wheelDelta !== undefined ? e.wheelDelta / -120 : e.detail / 3,
+					coord1 = new Vector({ x: data.left -100, y: data.top -100 }),
+					coord2 = coord1.angle( coord1.angle() + delta/100 );
+			
+			data.left = coord2.x + 100;
+			data.top = coord2.y + 100;
+			
+			updateHandle(canvas, data, handle, fn);
 		});
+		
 		
 		return chooser;
 	};
