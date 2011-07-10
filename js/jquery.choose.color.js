@@ -362,6 +362,8 @@
 			data.top = coord2.y + 100;
 			
 			updateHandle(canvas, data, handle, fn);
+			
+			e.preventDefault();
 		});
 		
 		
