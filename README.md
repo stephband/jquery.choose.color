@@ -1,6 +1,16 @@
-Notes to self.
+<h1>jquery.choose.color</h1>
 
-TODO:
+<p>A minimalist color picker made with the canvas tag. In its infancy. Some things that make it special:</p>
+
+<ul>
+	<li>Supports alpha transparent colours.</li>
+	<li>Accepts and returns jQuery.Color objects.</li>
+	<li>Scroll to cycle through hues.</li>
+</ul>
+
+<h2>Todo</h2>
+
+Notes to self.
 
 • Instead of using a DOM node as the choose point, why not draw that thing right on the canvas? It would mean redrawing the canvas on every move, but that won't hurt too much...
 
