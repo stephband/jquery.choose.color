@@ -35,8 +35,7 @@
 			background-image: url('css/tests/images/grid_8px.png')
 		}
 		
-		.test {
-			
+		.color_chooser {
 			width: 180px;
 			position: relative;
 			padding: 1em;
@@ -45,30 +44,31 @@
 			color: white;
 		}
 		
-		.test .controls {
+		.color_chooser .controls_wrap {
 			z-index: 2;
 		}
 		
-		.point {
+		.color_chooser .handle {
 			position: absolute;
-			-webkit-border-radius: 7px;
-			   -moz-border-radius: 7px;
-			        border-radius: 7px;
+			
+			-webkit-border-radius: 8px;
+			   -moz-border-radius: 8px;
+			        border-radius: 8px;
 			
 			border: 2px solid rgba(63,63,63,0.8);
 			background-color: white;
 			
 			top: 100px;
 			left: 50%;
-			width: 14px;
-			height: 14px;
-			margin-left: -7px;
-			margin-top: -7px;
+			width: 16px;
+			height: 16px;
+			margin-left: -8px;
+			margin-top: -8px;
 			
 			z-index: 3;
 		}
 		
-		#bg {
+		.color_chooser .bg_layer {
 			width: 100%;
 			height: 100%;
 			z-index: 1;
@@ -78,7 +78,7 @@
 			        border-radius: 0.5em;
 		}
 		
-		.wheel_wrap {
+		.color_chooser .wheel_wrap {
 			position: absolute;
 			top: 32px;
 			left: 0;
@@ -88,12 +88,7 @@
 			z-index: 2;
 		}
 		
-		#colorwheel {
-			width: 200px;
-			height: 200px;
-		}
-		
-		h2 {
+		.color_chooser .title {
 			color: white;
 			position: relative;
 			z-index: 2;
@@ -107,23 +102,6 @@
 </head>
 
 <body>
-	<div class="test">
-		<h2>Colour</h2>
-		<canvas id="bg" class="bg_layer layer"></canvas>
-		<div class="wheel_wrap wrap">
-			<canvas id="colorwheel"></canvas>
-			<div class="point"></div>
-		</div>
-		
-		<form class="controls">
-		  <label for="lightness_picker">Lightness</label>
-		  <input type="range" data-property="lightness" value="1" id="lightness_picker" min="0" max="1" step="0.01"/>
-		  
-		  <label for="opacity_picker">Opacity</label>
-		  <input type="range" data-property="opacity" value="1" id="opacity_picker" min="0" max="1" step="0.01"/>
-		</form>
-	</div>
-	
 	
 	<!--[if IE 6]><script src="iepngfix/iepngfix_tilebg.js"></script><![endif]-->
 	<script src="js/js.extensions.js"></script>
@@ -131,257 +109,22 @@
 	<script>!window.jQuery && document.write(unescape('%3Cscript src="js/jquery.js"%3E%3C/script%3E'));</script>
 	<script src="js/jquery.event.move.js"></script>
 	<script src="js/jquery.color.js"></script>
+	<script src="js/jquery.chooser.color.js"></script>
 	<script src="js/jquery.validator.js"></script>
 	<script src="js/jquery.transitions.js"></script>
 	
 	<script type="text/javascript">
+		jQuery(document).delegate('input', 'focus', function(e) {
+			jQuery.Chooser('rgba(0,0,0,0)', function(color) {
 				
-				// ----------
-				
-				var τ = Math.PI * 2,
-				    opacity = 0.8,
-				    bg = jQuery('#bg'),
-				    size = {
-				    	width: bg.width(),
-				    	height: bg.height()
-				    },
-				    canvas, gradient, color, n;
-				
-				bg[0].width = bg.width();
-				bg[0].height = bg.height();
-				
-				// Get canvas context, draw canvas, get image data		
-				// if fails we don't support canvas, so give up
-				try {
-					canvas = bg[0].getContext('2d');
-				}
-				catch(e) {
-					// canvas not supported
-					//return this;
-				}
-				
-				canvas.fillStyle = 'rgba(120,120,120,1)';
-				
-				canvas.beginPath();
-				canvas.moveTo(0,0);
-				canvas.rect(0,0,size.width, size.height);
-				canvas.fill();
-				canvas.closePath();
-				
-				canvas.globalCompositeOperation	=	'destination-out';
-				
-				canvas.translate(size.width/2, 132);
+			});
+		});
+		
+		var thing = jQuery.colorChooser('rgba(255,78,100,0.6)', function(color) {
+		  console.log(color);
+		});
 
-				canvas.beginPath();
-				canvas.moveTo(0,0);
-				
-				canvas.arc(0,0,100, 0, τ);
-				
-				canvas.fill();
-				canvas.closePath();
-				
-				
-				
-				
-				
-				// -----------
-				
-				var τ = Math.PI * 2,
-				    opacity = 1,
-				    lightness = 0,
-				    segments = 180,
-				    innerRadius = 8,
-				    outerRadius = 96,
-				    point = jQuery('.point'),
-				    pointPos = { left: 0, right: 0 },
-				    containerElement = jQuery('.test')[0],
-				    canvasElement = jQuery('#colorwheel')[0],
-				    canvas, gradient, color, n, wheelData, imageData;
-				
-				canvasElement.width = 200;
-				canvasElement.height = 200;
-				
-				// Get canvas context, draw canvas, get image data		
-				// if fails we don't support canvas, so give up
-				try {
-					canvas = canvasElement.getContext('2d');
-				}
-				catch(e) {
-					// canvas not supported
-					//return this;
-				}
-				
-				canvas.translate(100,100);
-				
-				var drawSpectrum = function(canvas, segments) {
-					var n = segments,
-							l = segments - 1,
-							a = τ / segments,
-							coords = {
-								left: parseInt(point.css('left')),
-								top:  parseInt(point.css('top'))
-							},
-							gradient, wheelData;
-					
-					canvas.globalCompositeOperation	=	'source-over';
-					
-					while (n--) {
-					  canvas.fillStyle = 'hsl('+(360*n/segments)+', 100%, 50%)';
-					  
-					  canvas.beginPath();
-					  canvas.moveTo(0,0);
-					  canvas.arc(0,0,98, (n === l ? -a : -a/2), (n === 0 ? a/2 : a));
-					  canvas.fill();
-					  canvas.rotate(a);
-					  canvas.closePath();
-					}
-					
-					// Knock out gradient
-					gradient = canvas.createRadialGradient(0,0,innerRadius,0,0,outerRadius);
-					gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-					gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-					
-					canvas.globalCompositeOperation	=	'destination-out';
-					canvas.fillStyle = gradient;
-					
-					canvas.beginPath();
-					canvas.moveTo(0,0);
-					canvas.arc(0,0,outerRadius,0,τ);
-					canvas.fill();
-					canvas.closePath();
-					
-					// Cache the image data so we can render the spectrum
-					// quickly next time.
-					wheelData = canvas.getImageData(-100,-100,200,200);
-					
-					drawSpectrum = function(c, s) {
-						c.putImageData(wheelData, 0, 0);
-					};
-				};
-				
-				function drawChooser(canvas, segments, lightness, opacity) {
-					canvas.save();
-					
-					canvas.clearRect(-200,-200,400,400);
-					
-					drawSpectrum(canvas, segments);
-					
-					// Apply the background lightness
-					canvas.globalCompositeOperation	=	'destination-over';
-					canvas.fillStyle = 'hsl(0, 0%, '+(100*lightness)+'%)';
-					
-					canvas.beginPath();
-					canvas.moveTo(0,0);
-					canvas.arc(0,0,outerRadius,0,τ);
-					canvas.fill();
-					canvas.closePath();
-					
-					// Apply the opacity
-					canvas.globalCompositeOperation	=	'destination-out';
-					canvas.fillStyle = 'rgba(0,0,0,'+(1-opacity)+')';
-					
-					canvas.beginPath();
-					canvas.moveTo(0,0);
-					canvas.rect(-100,-100,200,200);
-					canvas.fill();
-					canvas.closePath();
-					
-					canvas.restore();
-					
-					imageData = undefined;
-				}
-				
-				drawChooser(canvas, segments, lightness, opacity);
-				
-				
-				
-				
-				
-				function getPixelColor(canvas, coords) {
-					var pixelIndex = getPixelIndex(200, coords),
-							pixelColor;
-					
-					if (!imageData) {
-						imageData = canvas.getImageData(0, 0, 200, 200).data;
-					}
-					
-					pixelColor = Array.prototype.slice.apply(imageData, [pixelIndex, pixelIndex+4]);
-					
-					// Opacity in canvas image data is reported in the range 0-255. Set
-					// it to the range 0-1.
-					pixelColor[3] /= 255;
-					
-					return jQuery.Color(pixelColor);
-				};
-				
-				function getPixelIndex(width, coords) {
-					return (coords.left + coords.top * width) * 4;		
-				};
-				
-				// mousemove (hover) event
-				jQuery('.wheel_wrap')
-				.bind('mousedown move', function(e) {
-					var elem = jQuery(this),
-							offset = elem.offset();
-							
-					coords = {
-					  left: e.pageX - offset.left,
-					  top: e.pageY - offset.top
-					};
-					
-					var polar = Math.toPolar([coords.left - 100, coords.top - 100]);
-					var cart;
-					
-					// Limit point to within chooser circle
-					if (polar[0] > 96) {
-						polar[0] = 97;
-						cart = Math.toCartesian(polar);
-						coords.left = parseInt(cart[0]) + 100;
-						coords.top = parseInt(cart[1]) + 100;
-					}
-					// Lock point to centre if its within the inner circle
-					else if (polar[0] < 8) {
-						polar[0] = 0;
-						coords.left = 100;
-						coords.top = 100;
-					}
-					
-					var color = getPixelColor(canvas, coords);
-					
-					point.css({
-						top: coords.top,
-						left: coords.left,
-						backgroundColor: color.toRgbaString()
-					});
-				});
-				
-				function updatePoint(canvas, coords) {
-					var color = getPixelColor(canvas, coords);
-					
-					point.css({
-						backgroundColor: color.toRgbaString()
-					});
-				}
-				
-				var changeProperty = {
-					opacity: function(val) {
-						opacity = parseFloat(val);
-						drawChooser(canvas, segments, lightness, opacity);
-						updatePoint(canvas, coords);
-					},
-					lightness: function(val) {
-						lightness = parseFloat(val);
-						drawChooser(canvas, segments, lightness, opacity);
-						updatePoint(canvas, coords);
-					}
-				};
-				
-				jQuery('.controls').delegate('input', 'change', function(e) {
-					var input = jQuery(this),
-							property = input.data('property');
-					
-					changeProperty[property](input.val());
-				});
+		
 	</script>
 </body>
 </html>
