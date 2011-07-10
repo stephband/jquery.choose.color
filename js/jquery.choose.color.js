@@ -47,6 +47,7 @@
 		
 		// Get canvas context. If it fails we don't support
 		// canvas, so give up.
+		
 		try {
 			canvas = node.getContext('2d');
 		}
@@ -69,13 +70,15 @@
 		canvas.closePath();
 		
 		canvas.globalCompositeOperation	=	'destination-out';
+		canvas.fillStyle = 'black';
 		canvas.translate(width/2, 132);
 		
 		canvas.beginPath();
 		canvas.moveTo(0, 0);
-		canvas.arc(0, 0, 100, 0, τ);
-		canvas.fill();
+		canvas.arc(0, 0, 100, 0, τ, false);
+		canvas.moveTo(0, 0);
 		canvas.closePath();
+		canvas.fill();
 	}
 	
 	
@@ -93,7 +96,7 @@
 		  
 		  canvas.beginPath();
 		  canvas.moveTo(0,0);
-		  canvas.arc(0,0,98, (n === l ? -a : -a/2), (n === 0 ? a/2 : a));
+		  canvas.arc(0,0,98, (n === l ? -a : -a/2), (n === 0 ? a/2 : a), false);
 		  canvas.fill();
 		  canvas.rotate(a);
 		  canvas.closePath();
@@ -109,7 +112,7 @@
 		
 		canvas.beginPath();
 		canvas.moveTo(0,0);
-		canvas.arc(0,0,outerRadius,0,τ);
+		canvas.arc(0, 0, outerRadius, 0, τ, false);
 		canvas.fill();
 		canvas.closePath();
 	}
@@ -140,7 +143,7 @@
 		
 		canvas.beginPath();
 		canvas.moveTo(0, 0);
-		canvas.arc(0, 0, outerRadius, 0, τ);
+		canvas.arc(0, 0, outerRadius, 0, τ, false);
 		canvas.fill();
 		canvas.closePath();
 		
@@ -300,6 +303,7 @@
 		
 		// Draw the canvii
 		setupCanvas(bg[0], bg.width(), bg.height(), drawBg);
+		
 		setupCanvas(wheel[0], wheel.width(), wheel.height(), function(c, width, height) {
 			data.width = width;
 			canvas = c;

@@ -101,7 +101,7 @@
 		
 		/* -----  */
 		
-		input[type="color"] {
+		#color {
 		  width: 152px;
 		  background: white;
 		  opacity: 1;
@@ -132,7 +132,7 @@
 <body>
 	
 	<label class="swatch_thumb thumb" for="color">Colour</label>
-	<input type="color" data-type="csscolor" value="rgb(10,10,210)" id="color" />
+	<input type="text" data-type="csscolor" value="rgb(10,10,210)" id="color" />
 	
 	<!--[if IE 6]><script src="iepngfix/iepngfix_tilebg.js"></script><![endif]-->
 	<script src="js/js.extensions.js"></script>
@@ -155,13 +155,10 @@
 		    // truncate huge decimals in alpha value
 		    var alpha = color.alpha().toString().slice(0,4);
 		    
-		    input.val('rgb('+color.red()+', '+color.green()+', '+color.blue()+', '+alpha+')');
+		    input.val('rgba('+color.red()+', '+color.green()+', '+color.blue()+', '+alpha+')');
 		    label.css({ backgroundColor: color.toRgbaString() });
 		  });
-			
 		});
-
-		
 	</script>
 </body>
 </html>
