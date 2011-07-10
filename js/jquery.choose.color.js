@@ -131,7 +131,7 @@
 		  
 		  // Cache the image data so we can render the spectrum
 		  // quickly next time.
-		  data.wheelData = canvas.getImageData(-100,-100,200,200);
+		  data.wheelData = canvas.getImageData(0,0,200,200);
 		}
 		
 		// Apply the background lightness

@@ -97,13 +97,42 @@
 			top: 1em;
 			left: 1em;
 		}
+		
+		
+		/* -----  */
+		
+		input[type="color"] {
+		  width: 152px;
+		  background: white;
+		  opacity: 1;
+		  border: 1px solid rgb(220,220,220);
+		  height: 2.1em;
+		  margin-top: -1px;
+		  margin-bottom: 3em;
+		  display: inline-block;
+		  vertical-align: top;
+		}
+		
+		.swatch_thumb {
+		  height: 2em;
+		  width: 2em;
+		  padding-top: 2em;
+		  padding-bottom: 0;
+		  line-height: 2em;
+		  display: inline-block;
+		  background-color: white;
+		  border: 1px solid rgb(220,220,220);
+		  vertical-align: top;
+		  margin-top: -1px;
+		}
 	</style>
 	
 </head>
 
 <body>
 	
-	<input type="color" data-type="csscolor" />
+	<label class="swatch_thumb thumb" for="color">Colour</label>
+	<input type="color" data-type="csscolor" value="rgb(10,10,210)" id="color" />
 	
 	<!--[if IE 6]><script src="iepngfix/iepngfix_tilebg.js"></script><![endif]-->
 	<script src="js/js.extensions.js"></script>
@@ -116,14 +145,20 @@
 	<script src="js/jquery.transitions.js"></script>
 	
 	<script type="text/javascript">
-		jQuery(document).delegate('input', 'focus', function(e) {
-			jQuery.Chooser('rgba(0,0,0,0)', function(color) {
-				
-			});
-		});
-		
-		var thing = jQuery.colorChooser('rgba(255,78,100,0.6)', function(color) {
-		  console.log(color);
+		jQuery(document).ready(function(){
+			var input = jQuery('#color');
+			var label = jQuery('[for="color"]');
+			
+			label.css({ backgroundColor: input.val() });
+			
+		  var thing = jQuery.colorChooser(input.val(), function(color) {
+		    // truncate huge decimals in alpha value
+		    var alpha = color.alpha().toString().slice(0,4);
+		    
+		    input.val('rgb('+color.red()+', '+color.green()+', '+color.blue()+', '+alpha+')');
+		    label.css({ backgroundColor: color.toRgbaString() });
+		  });
+			
 		});
 
 		
