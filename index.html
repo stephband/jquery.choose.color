@@ -158,6 +158,10 @@
 		    input.val('rgba('+color.red()+', '+color.green()+', '+color.blue()+', '+alpha+')');
 		    label.css({ backgroundColor: color.toRgbaString() });
 		  });
+		  
+		  input.bind('change', function() {
+		  	thing.val(input.val());
+		  });
 		});
 	</script>
 </body>
