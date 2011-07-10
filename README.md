@@ -2,6 +2,8 @@ Notes to self.
 
 TODO:
 
+• Instead of using a DOM node as the choose point, why not draw that thing right on the canvas? It would mean redrawing the canvas on every move, but that won't hurt too much...
+
 • Try creating the colour wheel with three (r, g, b) overlapping radial gradients, just to see quoi ça nous donne.
 
 • DONE The chooser canvas ought to go in a position parent div, so that coordinates for the point can be the same as the canvas.
