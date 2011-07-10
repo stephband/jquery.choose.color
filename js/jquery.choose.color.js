@@ -355,8 +355,9 @@
 		.bind('mousewheel.chooser DOMMouseScroll.chooser', function(e) {
 			var elem = jQuery(this),
 					delta = e.wheelDelta !== undefined ? e.wheelDelta / -120 : e.detail / 3,
+					limit = 16,
 					coord1 = new Vector({ x: data.left -100, y: data.top -100 }),
-					coord2 = coord1.angle( coord1.angle() + delta/100 );
+					coord2 = coord1.angle( coord1.angle() + (delta > limit ? limit/100 : delta < -limit ? -limit/100 : delta/100) );
 			
 			data.left = coord2.x + 100;
 			data.top = coord2.y + 100;
