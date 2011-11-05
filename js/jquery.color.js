@@ -157,7 +157,7 @@
 		if ( prop.type === "float" ) {
 			value = parseFloat( value );
 		}
-		if ( jQuery.isNaN( value ) ) {
+		if (value!=value) {
 			value = prop.def;
 		}
 		return prop.min > value ? prop.min : prop.max < value ? prop.max : value;
